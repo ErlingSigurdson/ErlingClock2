@@ -1,15 +1,16 @@
 /*************** FILE DESCRIPTION ***************/
 
 /**
- * Filename: ErlingClock1.ino
+ * Filename: ErlingClock2.ino
  * ----------------------------------------------------------------------------|---------------------------------------|
  * Purpose:  The main file of the firmware (the Arduino sketch) written for
- *           the Arduino Pro Mini-based electronic clock I made in 2022.
+ *           the LGT8F328P (SSOP20) "pseudo-Pro Mini"-based electronic clock
+ *           I made in 2022.
  * ----------------------------------------------------------------------------|---------------------------------------|
  * Notes:    The project's Git repositories:
- *           * https://github.com/ErlingSigurdson/ErlingClock1
- *           * https://gitflic.ru/project/efimov-d-v/erlingclock1
- *           * https://codeberg.org/ErlingSigurdson/ErlingClock1
+ *           * https://github.com/ErlingSigurdson/ErlingClock2
+ *           * https://gitflic.ru/project/efimov-d-v/erlingclock2
+ *           * https://codeberg.org/ErlingSigurdson/ErlingClock2
  */
 
 
@@ -25,6 +26,7 @@
 
 // Buttons.
 #include <uButton.h>
+#include <uButtonMulti.h>
 
 // DS3231 RTC interfacing.
 #include <GyverDS3231Min.h>
@@ -34,14 +36,14 @@
 
 #define POS_SWITCH_TYPE Drv7SegActiveHigh
 
-#define DATA_PIN  4
-#define LATCH_PIN 2
-#define CLOCK_PIN 3
+#define DATA_PIN  7
+#define LATCH_PIN 8
+#define CLOCK_PIN 11
 
-#define POS_1_PIN 9
-#define POS_2_PIN 8
-#define POS_3_PIN 7
-#define POS_4_PIN 6
+#define POS_1_PIN A1
+#define POS_2_PIN A0
+#define POS_3_PIN 13
+#define POS_4_PIN 12
 
 /* Not strictly necessary, but it's a guard against ripple caused by
  * gaps in multiplexing that occur due to long-ish I/O.
@@ -51,15 +53,14 @@
 
 /*--- SegMap595 library API parameters ---*/
 
-#define MAP_STR "DA@FCBGE"
+#define MAP_STR "ED@CGAFB"
 #define DISPLAY_COMMON_PIN SegMap595CommonCathode
 
 
 /*--- Buttons ---*/
 
-#define BTN_1_PIN 10
-#define BTN_2_PIN 12
-#define BTN_3_PIN 11
+#define BTN_1_PIN 2
+#define BTN_2_PIN 3
 
 
 /*--- Timing and counters ---*/
@@ -80,7 +81,7 @@
 #define STRINGIFY(x) INTERMEDIATE_STRINGIFY(x)
 #define INTERMEDIATE_STRINGIFY(x) #x
 
-#define VERSION 2.2.0
+#define VERSION 2.0.0
 
 
 /****************** DATA TYPES ******************/
@@ -148,7 +149,7 @@ namespace mp_safe_io {
 namespace modes {
     namespace time_setting {
         void loop(GyverDS3231Min& GyverRTC, CurrentTime& current_time,
-                  uButton& btn_1, uButton& btn_2, uButton& btn_3,
+                  uButton& btn_1, uButton& btn_2, uButtonMulti& btn_3,
                   bool& dark_mode_flag,
                   bool& time_setting_mode_flag
                  );
@@ -226,9 +227,9 @@ void loop()
 
     /*--- Button initialization ---*/
 
-    static uButton btn_1(BTN_1_PIN);
-    static uButton btn_2(BTN_2_PIN);
-    static uButton btn_3(BTN_3_PIN);
+    static uButton      btn_1(BTN_1_PIN);
+    static uButton      btn_2(BTN_2_PIN);
+    static uButtonMulti btn_3;
 
 
     /*--- Dark mode control ---*/
@@ -359,8 +360,8 @@ void loop()
 
     /*--- Dark mode control, continued ---*/
 
-    if (btn_3.tick()) {
-        if (btn_3.press()) {
+    if (btn_2.tick()) {
+        if (btn_2.press()) {
             dark_mode_flag = !dark_mode_flag;
             update_output_due = true;
         }
@@ -472,7 +473,7 @@ inline void mp_safe_io::serial_print(uint32_t val)
 #endif
 
 void modes::time_setting::loop(GyverDS3231Min& GyverRTC, CurrentTime& current_time,
-                               uButton& btn_1, uButton& btn_2, uButton& btn_3,
+                               uButton& btn_1, uButton& btn_2, uButtonMulti& btn_3,
                                bool& dark_mode_flag,
                                bool& time_setting_mode_flag
                               )
@@ -487,16 +488,7 @@ void modes::time_setting::loop(GyverDS3231Min& GyverRTC, CurrentTime& current_ti
         /*--- Buttons ---*/
 
         if (btn_1.tick()) {
-            if (btn_1.press()) {
-                mp_safe_io::write_rtc_time(GyverRTC, current_time);
-                dark_mode_flag = false;
-                time_setting_mode_flag = false;
-                break;
-            }
-        }
-
-        if (btn_2.tick()) {
-            if (btn_2.press() || btn_2.step()) {
+            if (btn_1.click() || btn_1.step()) {
                 current_time.raw.hours++;
                 // Handy for debugging.
                 //current_time.raw.minutes++;
@@ -504,12 +496,21 @@ void modes::time_setting::loop(GyverDS3231Min& GyverRTC, CurrentTime& current_ti
             }
         }
 
-        if (btn_3.tick()) {
-            if (btn_3.press() || btn_3.step()) {
+        if (btn_2.tick()) {
+            if (btn_2.click() || btn_2.step()) {
                 current_time.raw.minutes++;
                 // Handy for debugging.
                 //current_time.raw.seconds++;
                 update_output_due = true;
+            }
+        }
+
+        if (btn_3.tick(btn_1, btn_2)) {
+            if (btn_3.press()) {
+                mp_safe_io::write_rtc_time(GyverRTC, current_time);
+                dark_mode_flag = false;
+                time_setting_mode_flag = false;
+                break;
             }
         }
 
