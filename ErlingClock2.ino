@@ -262,7 +262,7 @@ void loop()
         mp_safe_io::read_rtc_time(GyverRTC, current_time);
 
         #ifdef SERIAL_OUTPUT_ENABLED
-        mp_safe_io::serial_print("ErlingClock1 sketch version: " STRINGIFY(VERSION) "\r\n");
+        mp_safe_io::serial_print("ErlingClock2 sketch version: " STRINGIFY(VERSION) "\r\n");
         #endif
         
         update_i2c_due = false;
