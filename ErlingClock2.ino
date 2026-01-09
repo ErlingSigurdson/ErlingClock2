@@ -346,7 +346,7 @@ void loop()
     static bool time_setting_mode_flag = false;
 
     if (btn_1.tick()) {
-        if (btn_1.press()) {
+        if (btn_1.hold()) {
             time_setting_mode_flag = true;
         }
     }
