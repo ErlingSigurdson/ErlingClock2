@@ -77,7 +77,7 @@ This stuff is licensed under the **MIT License** (see `LICENSE` [here](LICENSE))
 * An [article](https://vk.ru/@-214685134-elektronnye-chasy-na-arduino-i-module-ds3231ds1307?subtype=primary)
 I wrote on this project in 2022. The pinned sketch is legacy (consider it to be version 1.0.0, deprecated), and
 overall writing doesn't satisfy me anymore, but I don't care enough to do something about this one.
-* File archive: [storage #1](https://disk.yandex.ru/d/ZkYEhKhuj1vNvg), [storage #2](https://drive.google.com/drive/folders/1e0xsmpC7yQtPBWnrMO5NivBALOWTDool?usp=sharing).
+* File archive: [storage #1](https://disk.yandex.ru/d/uS6pq9rk_9wKeA), [storage #2](https://drive.google.com/drive/folders/1arZk6zFTVFDKjN_ukAXRYRmHfUNUkjSP?usp=sharing).
 
 ## Contact details
 
