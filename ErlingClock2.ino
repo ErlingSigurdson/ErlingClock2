@@ -341,14 +341,19 @@ void loop()
     }
 
 
+    /*--- Buttons status check ---*/
+
+    btn_1.tick();
+    btn_2.tick();
+    btn_3.tick(btn_1, btn_2);
+
+
     /*--- Time setting mode control ---*/
 
     static bool time_setting_mode_flag = false;
 
-    if (btn_1.tick()) {
-        if (btn_1.hold()) {
-            time_setting_mode_flag = true;
-        }
+    if (btn_3.press()) {
+        time_setting_mode_flag = true;
     }
 
     if (time_setting_mode_flag) {
@@ -362,11 +367,9 @@ void loop()
 
     /*--- Dark mode control, continued ---*/
 
-    if (btn_2.tick()) {
-        if (btn_2.press()) {
-            dark_mode_flag = !dark_mode_flag;
-            update_output_due = true;
-        }
+    if (btn_2.click()) {
+        dark_mode_flag = !dark_mode_flag;
+        update_output_due = true;
     }
 }
 
