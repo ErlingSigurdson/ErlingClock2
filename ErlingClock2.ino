@@ -152,6 +152,7 @@ namespace modes {
     namespace time_setting {
         void loop(GyverDS3231Min& GyverRTC, CurrentTime& current_time,
                   uButton& btn_1, uButton& btn_2, uButtonMulti& btn_3,
+                  bool& update_output_due,
                   bool& dark_mode_flag,
                   bool& time_setting_mode_flag
                  );
@@ -359,9 +360,12 @@ void loop()
     if (time_setting_mode_flag) {
         modes::time_setting::loop(GyverRTC, current_time,
                                   btn_1, btn_2, btn_3,
+                                  update_output_due,
                                   dark_mode_flag,
                                   time_setting_mode_flag
                                  );
+        current_millis = millis();
+        previous_millis = current_millis;
     }
 
 
@@ -487,12 +491,13 @@ inline void mp_safe_io::serial_print(uint32_t val)
 
 void modes::time_setting::loop(GyverDS3231Min& GyverRTC, CurrentTime& current_time,
                                uButton& btn_1, uButton& btn_2, uButtonMulti& btn_3,
+                               bool& update_output_due,
                                bool& dark_mode_flag,
                                bool& time_setting_mode_flag
                               )
 {
     current_time = {};  // Assign all-zero values.
-    bool update_output_due = true;
+    bool _update_output_due = true;
 
     while (true) {
         Drv7Seg.output_all();
@@ -505,7 +510,7 @@ void modes::time_setting::loop(GyverDS3231Min& GyverRTC, CurrentTime& current_ti
                 current_time.raw.hours++;
                 // Handy for debugging.
                 //current_time.raw.minutes++;
-                update_output_due = true;
+                _update_output_due = true;
             }
         }
 
@@ -514,13 +519,14 @@ void modes::time_setting::loop(GyverDS3231Min& GyverRTC, CurrentTime& current_ti
                 current_time.raw.minutes++;
                 // Handy for debugging.
                 //current_time.raw.seconds++;
-                update_output_due = true;
+                _update_output_due = true;
             }
         }
 
         if (btn_3.tick(btn_1, btn_2)) {
             if (btn_3.press()) {
                 mp_safe_io::write_rtc_time(GyverRTC, current_time);
+                update_output_due = true;
                 dark_mode_flag = false;
                 time_setting_mode_flag = false;
                 break;
@@ -530,7 +536,7 @@ void modes::time_setting::loop(GyverDS3231Min& GyverRTC, CurrentTime& current_ti
 
         /*--- Output values update ---*/
 
-        if (update_output_due) {
+        if (_update_output_due) {
             current_time.apply_max_count();
             current_time.decompose_by_digits();
 
@@ -552,7 +558,7 @@ void modes::time_setting::loop(GyverDS3231Min& GyverRTC, CurrentTime& current_ti
             Drv7Seg.set_glyph_to_pos(seg_byte_pos_3, Drv7SegPos3);
             Drv7Seg.set_glyph_to_pos(seg_byte_pos_4, Drv7SegPos4);
 
-            update_output_due = false;
+            _update_output_due = false;
         }
     }
 }
